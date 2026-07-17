@@ -170,6 +170,7 @@ const DEFAULTS = {
   currentMonthKey: EPOCH_KEY,
   paid: {},
   recycleBin: [],
+  goals: [],
   jsonbin_key: '',
   jsonbin_id: ''
 };
@@ -624,13 +625,33 @@ function renderMonthPanel(key, data){
 let currentScreen = "home"; // "home" | "statements" | "charts" | "settings"
 let currentTab = null; // canonical month key, only meaningful within "statements"
 
+function getBalanceAsOfToday(){
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  let todayKey = keyForDate(today);
+  if(todayKey < EPOCH_KEY) todayKey = EPOCH_KEY;
+  const chain = computeChain(todayKey);
+  const idx = chain.order.indexOf(todayKey);
+  const opening = idx <= 0 ? S.start_balance : chain.data[chain.order[idx-1]].closing;
+  const rows = chain.data[todayKey].rows;
+  let bal = opening;
+  for(const r of rows){
+    if(d(r.date) <= today) bal = r.bal;
+    else break; // rows are sorted ascending by date already
+  }
+  return {
+    balance: bal,
+    label: today.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})
+  };
+}
+
 function renderHomeScreen(){
-  const bal = computeChain(S.currentMonthKey).data[S.currentMonthKey].closing;
+  const asOf = getBalanceAsOfToday();
   let html = `<div class="home-wrap">
     <div class="balance-hero">
       <div class="hero-label">Current balance</div>
-      <div class="hero-amount tabular">${fmt(bal)}</div>
-      <div class="hero-sub">as of ${keyLabel(S.currentMonthKey)}</div>
+      <div class="hero-amount tabular">${fmt(asOf.balance)}</div>
+      <div class="hero-sub">as of ${asOf.label}</div>
     </div>
     <div class="home-title">Your budget</div>
     <div class="home-grid">
