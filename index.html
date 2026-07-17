@@ -110,6 +110,19 @@
   .balance-hero .hero-label{font-size:11px;text-transform:uppercase;letter-spacing:0.06em;opacity:0.7;margin-bottom:4px}
   .balance-hero .hero-amount{font-family:'Space Grotesk',sans-serif;font-size:34px;font-weight:600;line-height:1.1;font-variant-numeric:tabular-nums}
   .balance-hero .hero-sub{font-size:12px;opacity:0.75;margin-top:6px}
+  .home-wrap{padding-top:14px}
+  .home-title{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:600;color:var(--navy);margin:2px 0 14px}
+  .home-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .home-box{background:var(--card);border-radius:16px;padding:1.2rem 1rem;box-shadow:0 1px 3px rgba(21,43,78,0.08);cursor:pointer;display:flex;flex-direction:column;align-items:flex-start;gap:8px}
+  .home-box:active{background:var(--azure-tint)}
+  .home-box-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px}
+  .home-box-label{font-weight:600;font-size:14px;color:var(--navy)}
+  .home-box-sub{font-size:11px;color:var(--text-muted);margin-top:-6px}
+  .back-bar{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:30;background:var(--paper);padding:10px 0 12px}
+  .back-btn{border:none;background:var(--card);color:var(--navy);font-size:13px;font-weight:500;padding:8px 14px;border-radius:999px;cursor:pointer;box-shadow:0 1px 2px rgba(21,43,78,0.06)}
+  .back-bar-title{font-family:'Space Grotesk',sans-serif;font-weight:600;color:var(--navy);font-size:16px}
+  .chart-card{background:var(--card);border-radius:16px;padding:1rem 0.9rem;box-shadow:0 1px 3px rgba(21,43,78,0.08);margin-bottom:12px}
+  .chart-card h3{margin:0 0 12px;font-size:14px;font-family:'Space Grotesk',sans-serif;font-weight:600;color:var(--navy)}
 </style>
 <div class="tabs" id="tabs"></div>
 <div id="panels"></div>
@@ -445,7 +458,7 @@ function updateSyncStatusUI(){
   if(el) el.textContent = syncStatus;
 }
 
-const STORAGE_KEY = 'terrys-budget-tracker-v4';
+const STORAGE_KEY = 'terrys-budget-tracker-v5';
 let saveTimer = null;
 function saveState(){
   clearTimeout(saveTimer);
@@ -608,56 +621,113 @@ function renderMonthPanel(key, data){
   return html;
 }
 
-let currentTab = "Inputs"; // "Inputs" or a canonical month key like "2026-07"
+let currentScreen = "home"; // "home" | "statements" | "charts" | "settings"
+let currentTab = null; // canonical month key, only meaningful within "statements"
+
+function renderHomeScreen(){
+  const bal = computeChain(S.currentMonthKey).data[S.currentMonthKey].closing;
+  let html = `<div class="home-wrap">
+    <div class="balance-hero">
+      <div class="hero-label">Current balance</div>
+      <div class="hero-amount tabular">${fmt(bal)}</div>
+      <div class="hero-sub">as of ${keyLabel(S.currentMonthKey)}</div>
+    </div>
+    <div class="home-title">Your budget</div>
+    <div class="home-grid">
+      <div class="home-box" data-screen="statements">
+        <span class="home-box-icon" style="background:var(--azure-tint)">📄</span>
+        <span class="home-box-label">Statements</span>
+        <span class="home-box-sub">Month by month</span>
+      </div>
+      <div class="home-box" data-screen="charts">
+        <span class="home-box-icon" style="background:var(--mint-tint)">📈</span>
+        <span class="home-box-label">Trends</span>
+        <span class="home-box-sub">Balance over time</span>
+      </div>
+      <div class="home-box" data-screen="settings">
+        <span class="home-box-icon" style="background:var(--amber-tint)">⚙️</span>
+        <span class="home-box-label">Settings</span>
+        <span class="home-box-sub">Sync, backup, reset</span>
+      </div>
+    </div>
+  </div>`;
+  return html;
+}
+
+function renderBackBar(title){
+  return `<div class="back-bar"><button class="back-btn" id="homeBackBtn">← Home</button><span class="back-bar-title">${title}</span></div>`;
+}
+
+function renderChartsPanel(){
+  const chain = computeChain(S.currentMonthKey);
+  const points = chain.order.map(k=>({key:k, label:keyLabel(k).split(' ')[0].slice(0,3), closing:chain.data[k].closing}));
+
+  const w = 340, h = 180, padL = 44, padR = 12, padT = 16, padB = 24;
+  const vals = points.map(p=>p.closing);
+  let min = Math.min(...vals, 0), max = Math.max(...vals, 10);
+  if(min === max){ min -= 10; max += 10; }
+  const range = max - min;
+  const stepX = points.length > 1 ? (w - padL - padR) / (points.length - 1) : 0;
+  const xFor = i => padL + i*stepX;
+  const yFor = v => padT + (h - padT - padB) * (1 - (v - min) / range);
+
+  const linePoints = points.map((p,i)=> `${xFor(i)},${yFor(p.closing)}`).join(' ');
+  const zeroY = yFor(0);
+
+  let svg = `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}">`;
+  svg += `<line x1="${padL}" y1="${zeroY}" x2="${w-padR}" y2="${zeroY}" stroke="var(--hairline)" stroke-width="1" stroke-dasharray="3,3"/>`;
+  svg += `<polyline fill="none" stroke="var(--azure)" stroke-width="2.5" points="${linePoints}"/>`;
+  points.forEach((p,i)=>{
+    const x = xFor(i), y = yFor(p.closing);
+    const isCurrent = p.key === S.currentMonthKey;
+    svg += `<circle cx="${x}" cy="${y}" r="${isCurrent?5:3.5}" fill="${p.closing<0?'#D64545':'var(--azure)'}" stroke="#fff" stroke-width="1.5"/>`;
+    svg += `<text x="${x}" y="${h-6}" font-size="9" fill="var(--ink-muted)" text-anchor="middle" font-family="Inter,sans-serif">${p.label}</text>`;
+  });
+  svg += `<text x="${padL-6}" y="${yFor(max)+3}" font-size="9" fill="var(--ink-muted)" text-anchor="end" font-family="Inter,sans-serif">£${Math.round(max)}</text>`;
+  svg += `<text x="${padL-6}" y="${yFor(min)+3}" font-size="9" fill="var(--ink-muted)" text-anchor="end" font-family="Inter,sans-serif">£${Math.round(min)}</text>`;
+  svg += `</svg>`;
+
+  const latest = points[points.length-1];
+  let html = `<div class="chart-card">
+    <h3>Closing balance by month</h3>
+    ${svg}
+  </div>
+  <div class="chart-card">
+    <h3>Latest</h3>
+    <div class="hero-sub" style="color:var(--text-secondary)">${keyLabel(latest.key)} closed at <strong style="color:var(--navy)">${fmt(latest.closing)}</strong></div>
+  </div>`;
+  return html;
+}
 
 function renderAll(){
-  const viewKey = (currentTab === "Inputs") ? S.currentMonthKey : currentTab;
-  const chain = computeChain(viewKey);
-  S._opening_ = {};
-  for(let i=0;i<chain.order.length;i++){
-    const k = chain.order[i];
-    const prevClosing = i===0 ? S.start_balance : chain.data[chain.order[i-1]].closing;
-    S._opening_[k] = prevClosing;
+  const tabsEl = document.getElementById('tabs');
+  const panelsEl = document.getElementById('panels');
+
+  if(currentScreen === 'home'){
+    tabsEl.innerHTML = '';
+    panelsEl.innerHTML = renderHomeScreen();
+    panelsEl.querySelectorAll('.home-box').forEach(box=>{
+      box.onclick = ()=>{
+        currentScreen = box.dataset.screen;
+        if(currentScreen === 'statements' && !currentTab){
+          currentTab = S.currentMonthKey;
+        }
+        renderAll();
+      };
+    });
+    return;
   }
 
-  const tabsEl = document.getElementById('tabs');
-  const rawCenter = S.currentMonthKey;
-  const minCenterForWindow = shiftKey(EPOCH_KEY, 2);
-  const centerKey = rawCenter < minCenterForWindow ? minCenterForWindow : rawCenter;
-  const windowKeys = [-2,-1,0,1,2].map(o=>shiftKey(centerKey,o));
+  if(currentScreen === 'charts'){
+    tabsEl.innerHTML = renderBackBar('Trends');
+    document.getElementById('homeBackBtn').onclick = ()=>{ currentScreen = 'home'; renderAll(); };
+    panelsEl.innerHTML = renderChartsPanel();
+    return;
+  }
 
-  let tabsHtml = `<div class="tab tab-cog ${currentTab==='Inputs'?'active':''}" data-tab="Inputs" aria-label="Settings">⚙️</div>`;
-  tabsHtml += `<button class="tab-arrow" id="prevMonthBtn" ${rawCenter<=EPOCH_KEY?'disabled':''} aria-label="Earlier months">◀</button>`;
-  windowKeys.forEach(k=>{
-    const active = (currentTab===k);
-    tabsHtml += `<div class="tab ${active?'active':''}" data-tab="${k}">${keyLabel(k)}</div>`;
-  });
-  tabsHtml += `<button class="tab-arrow" id="nextMonthBtn" aria-label="Later months">▶</button>`;
-  tabsEl.innerHTML = tabsHtml;
-
-  tabsEl.querySelectorAll('.tab[data-tab]').forEach(t=>{
-    t.onclick = ()=>{
-      const key = t.dataset.tab;
-      currentTab = key;
-      if(key !== 'Inputs') S.currentMonthKey = key;
-      renderAll();
-    };
-  });
-  document.getElementById('prevMonthBtn').onclick = ()=>{
-    const target = shiftKey(S.currentMonthKey, -1);
-    if(target < EPOCH_KEY) return;
-    S.currentMonthKey = target;
-    if(currentTab !== 'Inputs') currentTab = target;
-    renderAll();
-  };
-  document.getElementById('nextMonthBtn').onclick = ()=>{
-    S.currentMonthKey = shiftKey(S.currentMonthKey, 1);
-    if(currentTab !== 'Inputs') currentTab = S.currentMonthKey;
-    renderAll();
-  };
-
-  const panelsEl = document.getElementById('panels');
-  if(currentTab==="Inputs"){
+  if(currentScreen === 'settings'){
+    tabsEl.innerHTML = renderBackBar('Settings');
+    document.getElementById('homeBackBtn').onclick = ()=>{ currentScreen = 'home'; renderAll(); };
     panelsEl.innerHTML = renderInputsPanel();
     panelsEl.querySelectorAll('input[data-key]').forEach(inp=>{
       inp.onchange = (e)=>{
@@ -712,13 +782,63 @@ function renderAll(){
         const sure = confirm('This clears everything saved in this browser (all months, ticks, custom entries, cloud sync settings) and reloads the built-in defaults. This cannot be undone. Continue?');
         if(!sure) return;
         try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
+        try{ localStorage.removeItem('terrys-budget-tracker-v4'); }catch(e){}
         try{ localStorage.removeItem('terrys-budget-tracker-v3'); }catch(e){}
         try{ localStorage.removeItem('terrys-budget-tracker-v2'); }catch(e){}
         try{ localStorage.removeItem('terrys-budget-tracker-v1'); }catch(e){}
         location.reload();
       };
     }
-  } else {
+    return;
+  }
+
+  // currentScreen === 'statements'
+  const viewKey = currentTab || S.currentMonthKey;
+  const chain = computeChain(viewKey);
+  S._opening_ = {};
+  for(let i=0;i<chain.order.length;i++){
+    const k = chain.order[i];
+    const prevClosing = i===0 ? S.start_balance : chain.data[chain.order[i-1]].closing;
+    S._opening_[k] = prevClosing;
+  }
+
+  const rawCenter = S.currentMonthKey;
+  const minCenterForWindow = shiftKey(EPOCH_KEY, 2);
+  const centerKey = rawCenter < minCenterForWindow ? minCenterForWindow : rawCenter;
+  const windowKeys = [-2,-1,0,1,2].map(o=>shiftKey(centerKey,o));
+
+  let tabsHtml = `<button class="tab-arrow" id="homeBackBtn2" aria-label="Back to home">🏠</button>`;
+  tabsHtml += `<button class="tab-arrow" id="prevMonthBtn" ${rawCenter<=EPOCH_KEY?'disabled':''} aria-label="Earlier months">◀</button>`;
+  windowKeys.forEach(k=>{
+    const active = (currentTab===k);
+    tabsHtml += `<div class="tab ${active?'active':''}" data-tab="${k}">${keyLabel(k)}</div>`;
+  });
+  tabsHtml += `<button class="tab-arrow" id="nextMonthBtn" aria-label="Later months">▶</button>`;
+  tabsEl.innerHTML = tabsHtml;
+
+  document.getElementById('homeBackBtn2').onclick = ()=>{ currentScreen = 'home'; renderAll(); };
+  tabsEl.querySelectorAll('.tab[data-tab]').forEach(t=>{
+    t.onclick = ()=>{
+      const key = t.dataset.tab;
+      currentTab = key;
+      S.currentMonthKey = key;
+      renderAll();
+    };
+  });
+  document.getElementById('prevMonthBtn').onclick = ()=>{
+    const target = shiftKey(S.currentMonthKey, -1);
+    if(target < EPOCH_KEY) return;
+    S.currentMonthKey = target;
+    currentTab = target;
+    renderAll();
+  };
+  document.getElementById('nextMonthBtn').onclick = ()=>{
+    S.currentMonthKey = shiftKey(S.currentMonthKey, 1);
+    currentTab = S.currentMonthKey;
+    renderAll();
+  };
+
+  {
     const key = currentTab;
     panelsEl.innerHTML = renderMonthPanel(key, chain.data[key]);
 
