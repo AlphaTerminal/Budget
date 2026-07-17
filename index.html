@@ -7,82 +7,109 @@
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
-<meta name="theme-color" content="#2563eb">
+<meta name="theme-color" content="#152B4E">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Budget">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
 <style>
   :root{
-    --border:#d8dce3;
-    --border-strong:#9aa4b2;
-    --radius:8px;
-    --surface-1:#f7f8fa;
-    --surface-2:#eef0f3;
-    --surface-accent:#2563eb;
-    --text-accent:#2563eb;
-    --text-muted:#8a929e;
-    --text-secondary:#5b6472;
-    --text-success:#1a7f4e;
+    --navy:#152B4E;
+    --azure:#3667F0;
+    --azure-tint:#EAF0FE;
+    --mint:#0E9F6E;
+    --mint-tint:#E5F8F0;
+    --amber:#DA8B1F;
+    --amber-tint:#FDF1DF;
+    --rose-tint:#FCEBEC;
+    --paper:#F4F6FA;
+    --card:#FFFFFF;
+    --ink:#152B4E;
+    --ink-muted:#7C879B;
+    --hairline:#E7EBF2;
+    --border:#e7ebf2;
+    --border-strong:#c3cbdb;
+    --radius:10px;
+    --surface-1:#F4F6FA;
+    --surface-2:#F4F6FA;
+    --surface-accent:#3667F0;
+    --text-accent:#3667F0;
+    --text-muted:#7C879B;
+    --text-secondary:#5A6B8C;
+    --text-success:#0E9F6E;
   }
   *{box-sizing:border-box}
-  body{max-width:480px;margin:0 auto}
-  .tabs{display:flex;gap:4px;overflow-x:auto;margin-bottom:12px;-webkit-overflow-scrolling:touch;padding-bottom:2px;position:sticky;top:0;z-index:30;background:#fff;padding-top:4px}
-  .tab{flex:0 0 auto;padding:7px 12px;border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-2);cursor:pointer;font-size:13px;white-space:nowrap}
-  .tab.active{background:var(--surface-1);border-color:var(--border-strong);font-weight:500}
-  .tab-cog{font-size:15px;padding:7px 10px}
-  .panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;position:sticky;top:39px;z-index:29;background:#fff;padding-bottom:6px}
-  .add-toggle-btn{flex:0 0 auto;width:30px;height:30px;border-radius:50%;border:none;background:var(--surface-accent,var(--text-accent));color:#fff;font-size:18px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
-  .addform{display:none;margin-top:10px;background:var(--surface-1);border-radius:12px;padding:0.75rem 0.85rem}
+  body{max-width:480px;margin:0 auto;background:var(--paper);font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:var(--ink);padding:0 10px 24px;-webkit-font-smoothing:antialiased}
+  .heading-font{font-family:'Space Grotesk',-apple-system,sans-serif}
+  .tabular{font-variant-numeric:tabular-nums}
+  .tabs{display:flex;gap:6px;overflow-x:auto;margin-bottom:14px;-webkit-overflow-scrolling:touch;padding-bottom:2px;position:sticky;top:0;z-index:30;background:var(--paper);padding-top:10px}
+  .tab{flex:0 0 auto;padding:8px 14px;border:none;border-radius:999px;background:var(--card);color:var(--text-secondary);cursor:pointer;font-size:13px;font-weight:500;white-space:nowrap;box-shadow:0 1px 2px rgba(21,43,78,0.06)}
+  .tab.active{background:var(--navy);color:#fff;box-shadow:0 2px 6px rgba(21,43,78,0.25)}
+  .tab-cog{font-size:15px;padding:8px 12px;background:var(--card)}
+  .panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;position:sticky;top:39px;z-index:29;background:var(--paper);padding-bottom:6px}
+  .add-toggle-btn{flex:0 0 auto;width:34px;height:34px;border-radius:50%;border:none;background:var(--azure);color:#fff;font-size:19px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 10px rgba(54,103,240,0.35)}
+  .addform{display:none;margin-top:10px;background:var(--card);border-radius:14px;padding:0.85rem 1rem;box-shadow:0 1px 3px rgba(21,43,78,0.08)}
   .addform.show{display:block}
-  .grp{background:var(--surface-1);border-radius:12px;padding:0.85rem 1rem;margin-bottom:10px}
-  .grp h3{margin:0 0 8px;font-size:14px}
-  .row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:5px 0}
+  .grp{background:var(--card);border-radius:14px;padding:0.9rem 1.1rem;margin-bottom:10px;box-shadow:0 1px 3px rgba(21,43,78,0.08)}
+  .grp h3{margin:0 0 8px;font-size:14px;font-family:'Space Grotesk',sans-serif;font-weight:600;color:var(--navy)}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 0}
   .row label{font-size:13px;color:var(--text-secondary);flex:1;min-width:0}
-  .row input{width:100px;text-align:right;flex:0 0 auto}
-  .statement{background:var(--surface-2);border-radius:12px;border:0.5px solid var(--border)}
-  table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
-  th,td{padding:7px 4px;border-bottom:0.5px solid var(--border);vertical-align:middle}
-  th{color:var(--text-secondary);font-weight:500;font-size:11px;text-align:right;position:sticky;top:75px;background:#fff;z-index:28}
+  .row input{width:100px;text-align:right;flex:0 0 auto;border:1px solid var(--hairline);border-radius:8px;padding:5px 8px;font-family:inherit}
+  .statement{background:var(--card);border-radius:16px;box-shadow:0 1px 3px rgba(21,43,78,0.08)}
+  table{width:100%;border-collapse:separate;border-spacing:0;font-size:13.5px}
+  th,td{padding:10px 6px;border-bottom:1px solid var(--hairline);vertical-align:middle}
+  th{color:var(--text-muted);font-weight:600;font-size:10.5px;letter-spacing:0.04em;text-transform:uppercase;text-align:right;position:sticky;top:75px;background:var(--card);z-index:28}
   .col-chk{width:22px;padding-right:0}
-  .col-date{width:78px;text-align:left;font-size:11px;color:var(--text-muted);white-space:nowrap;cursor:pointer}
-  .col-date:active{background:var(--surface-1)}
-  .col-item{text-align:left;overflow-wrap:break-word}
-  .col-amt{width:64px;text-align:right;white-space:nowrap;padding-right:4px;cursor:pointer}
-  .col-amt:active{background:var(--surface-1)}
-  .col-bal{width:64px;text-align:right;white-space:nowrap;padding-left:2px;color:var(--text-muted);font-size:12px}
+  .col-date{width:74px;text-align:left;font-size:11px;color:var(--text-muted);white-space:nowrap;cursor:pointer}
+  .col-date:active{background:var(--azure-tint)}
+  .col-item{text-align:left;overflow-wrap:break-word;font-weight:500}
+  .col-amt{width:68px;text-align:right;white-space:nowrap;padding-right:4px;cursor:pointer;font-family:'Space Grotesk',sans-serif;font-weight:500}
+  .col-amt:active{background:var(--azure-tint)}
+  .col-bal{width:66px;text-align:right;white-space:nowrap;padding-left:2px;color:var(--text-muted);font-size:12px;font-family:'Space Grotesk',sans-serif}
   .col-del{width:26px;padding-left:2px;padding-right:4px;text-align:center}
-  .rm{border:none;background:none;font-size:14px;cursor:pointer;padding:2px;line-height:1;opacity:0.55}
+  .rm{border:none;background:none;font-size:14px;cursor:pointer;padding:2px;line-height:1;opacity:0.4}
   .rm:active{opacity:1}
   th.col-date,th.col-item{text-align:left}
-  tr.summary td{font-weight:500;background:var(--surface-1)}
+  tr.summary td{font-weight:600;background:var(--azure-tint);color:var(--navy)}
+  tr.summary .col-bal{color:var(--navy);font-size:14px}
   .pos{color:var(--text-success)}
   .paid .col-item{text-decoration:line-through;color:var(--text-muted)}
   .paid .col-amt{color:var(--text-muted)}
   tbody tr{transition:opacity 0.25s ease}
+  tbody tr:active{background:var(--azure-tint)}
   tbody tr.fading{opacity:0}
   tbody tr.hidden{display:none}
   .statement.show-paid tbody tr.hidden{display:table-row;opacity:0.6}
-  .showpaid-toggle{border:none;background:none;color:var(--text-accent);font-size:12px;padding:6px 0;cursor:pointer}
-  .chk{width:16px;height:16px;margin:0}
+  .showpaid-toggle{border:none;background:none;color:var(--text-accent);font-size:12px;padding:8px 4px;cursor:pointer;font-weight:500}
+  .chk{width:17px;height:17px;margin:0;accent-color:var(--azure)}
+  .icon-chip{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;font-size:12px;margin-right:6px;flex:0 0 auto;vertical-align:middle}
+  .item-text{display:inline-flex;align-items:center}
   .addrow{display:flex;gap:8px;margin-bottom:8px}
   .addrow:last-child{margin-bottom:0}
   .add-item{flex:1;min-width:0}
   .add-date{flex:0 0 132px}
   .add-type{flex:0 0 92px}
   .add-amt{flex:1;min-width:0}
-  .add-btn{flex:0 0 auto;padding:0 14px}
-  .save-note{font-size:12px;color:var(--text-muted);margin-top:10px}
+  .add-btn{flex:0 0 auto;padding:0 16px;background:var(--azure);color:#fff;border:none;border-radius:8px;font-weight:500}
+  input[type="date"],input[type="text"],input[type="number"],select{border:1px solid var(--hairline);border-radius:8px;padding:6px 8px;font-family:inherit;font-size:13px;background:var(--card);color:var(--ink)}
+  .save-note{font-size:12px;color:var(--text-muted);margin-top:14px;text-align:center}
   .backup-bar{display:flex;gap:8px;margin-bottom:12px}
-  .backup-bar button, .backup-bar .import-label{flex:1;text-align:center;padding:7px 10px;font-size:13px;cursor:pointer}
+  .backup-bar button, .backup-bar .import-label{flex:1;text-align:center;padding:8px 10px;font-size:13px;cursor:pointer;border-radius:8px;border:1px solid var(--hairline);background:var(--card)}
   .import-label input{display:none}
   .sync-help{font-size:12px;color:var(--text-secondary);margin:0 0 8px}
   .sync-status{font-size:12px;color:var(--text-muted);margin-left:8px}
   .inline-input{width:100%;font-size:12px;padding:2px;border:1px solid var(--border-strong);border-radius:4px}
   .edit-hint{font-size:11px;color:var(--text-muted);text-align:center;padding:8px 0 2px}
-  .tab-arrow{flex:0 0 auto;padding:7px 8px;border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-2);cursor:pointer;font-size:13px}
+  .tab-arrow{flex:0 0 auto;padding:8px 10px;border:none;border-radius:999px;background:var(--card);cursor:pointer;font-size:12px;color:var(--text-secondary);box-shadow:0 1px 2px rgba(21,43,78,0.06)}
   .tab-arrow:disabled{opacity:0.3;cursor:default}
+  .balance-hero{background:linear-gradient(135deg,var(--navy),#213E6E);border-radius:18px;padding:1.1rem 1.25rem;margin-bottom:14px;color:#fff;box-shadow:0 4px 16px rgba(21,43,78,0.25)}
+  .balance-hero .hero-label{font-size:11px;text-transform:uppercase;letter-spacing:0.06em;opacity:0.7;margin-bottom:4px}
+  .balance-hero .hero-amount{font-family:'Space Grotesk',sans-serif;font-size:34px;font-weight:600;line-height:1.1;font-variant-numeric:tabular-nums}
+  .balance-hero .hero-sub{font-size:12px;opacity:0.75;margin-top:6px}
 </style>
 <div class="tabs" id="tabs"></div>
 <div id="panels"></div>
@@ -518,10 +545,27 @@ function renderInputsPanel(){
   return html;
 }
 
+function iconForItem(item){
+  const s = item.toLowerCase();
+  if(s.includes('payday')) return {e:'💰', bg:'var(--mint-tint)'};
+  if(s.includes('child benefit') || s.includes('universal credit')) return {e:'💷', bg:'var(--mint-tint)'};
+  if(s.includes('rent')) return {e:'🏠', bg:'var(--rose-tint)'};
+  if(s.includes('nursery') || s.includes('child maintenance')) return {e:'🧒', bg:'var(--amber-tint)'};
+  if(s.includes('food shop')) return {e:'🛒', bg:'var(--azure-tint)'};
+  if(s.includes('withdrawal')) return {e:'🏧', bg:'var(--amber-tint)'};
+  if(s.includes('utilit') || s.includes('council tax') || s.includes('water')) return {e:'📄', bg:'var(--azure-tint)'};
+  return {e:'•', bg:'var(--azure-tint)'};
+}
+
 function renderMonthPanel(key, data){
   const opening = S._opening_[key];
   let paidCount = 0;
-  let html = `<div class="panel-header"><span></span><button class="add-toggle-btn" id="addToggleBtn" aria-label="Add new entry">+</button></div>`;
+  let html = `<div class="balance-hero">
+    <div class="hero-label">${keyLabel(key)} — closing balance</div>
+    <div class="hero-amount tabular">${fmt(data.closing)}</div>
+    <div class="hero-sub">Brought forward ${fmt(opening)}</div>
+  </div>`;
+  html += `<div class="panel-header"><span></span><button class="add-toggle-btn" id="addToggleBtn" aria-label="Add new entry">+</button></div>`;
   html += '<div class="statement"><table>';
   html += `<thead><tr><th class="col-chk"></th><th class="col-date">Date</th><th class="col-item">Item</th><th class="col-amt">Amount</th><th class="col-bal">Balance</th><th class="col-del"></th></tr></thead><tbody>`;
   html += `<tr class="summary"><td class="col-chk"></td><td class="col-date"></td><td class="col-item">Balance brought forward</td><td class="col-amt"></td><td class="col-bal">${fmt(opening)}</td><td class="col-del"></td></tr>`;
@@ -534,16 +578,17 @@ function renderMonthPanel(key, data){
     const isPaid = !!S.paid[pkey];
     if(isPaid) paidCount++;
     const amtClass = r.amt >= 0 ? 'pos' : '';
+    const icon = iconForItem(r.item);
     html += `<tr class="${isPaid?'paid hidden':''}" data-id="${r.id}">`;
     html += `<td class="col-chk"><input type="checkbox" class="chk" data-key="${pkey}" ${isPaid?'checked':''} aria-label="Mark ${r.item} as paid"></td>`;
     html += `<td class="col-date" data-editcell="date" data-id="${r.id}">${label}</td>`;
-    html += `<td class="col-item">${r.item}</td>`;
-    html += `<td class="col-amt ${amtClass}" data-editcell="amt" data-id="${r.id}">${fmt(r.amt)}</td>`;
-    html += `<td class="col-bal">${fmt(r.bal)}</td>`;
+    html += `<td class="col-item"><span class="item-text"><span class="icon-chip" style="background:${icon.bg}">${icon.e}</span>${r.item}</span></td>`;
+    html += `<td class="col-amt ${amtClass} tabular" data-editcell="amt" data-id="${r.id}">${fmt(r.amt)}</td>`;
+    html += `<td class="col-bal tabular">${fmt(r.bal)}</td>`;
     html += `<td class="col-del"><button class="rm" data-remove="${r.id}" aria-label="Delete ${r.item}">🗑️</button></td>`;
     html += `</tr>`;
   });
-  html += `<tr class="summary"><td class="col-chk"></td><td class="col-date"></td><td class="col-item">Closing balance</td><td class="col-amt"></td><td class="col-bal">${fmt(data.closing)}</td><td class="col-del"></td></tr>`;
+  html += `<tr class="summary"><td class="col-chk"></td><td class="col-date"></td><td class="col-item">Closing balance</td><td class="col-amt"></td><td class="col-bal tabular">${fmt(data.closing)}</td><td class="col-del"></td></tr>`;
   html += '</tbody></table></div>';
   html += `<button class="showpaid-toggle" data-showpaid="${key}" data-label="${paidCount} paid item${paidCount>1?'s':''} — show" style="${paidCount===0?'display:none':''}">${paidCount} paid item${paidCount>1?'s':''} — show</button>`;
   html += `<div class="addform" id="addFormBox">
