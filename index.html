@@ -499,7 +499,7 @@ function updateSyncStatusUI(){
   if(el) el.textContent = syncStatus;
 }
 
-const STORAGE_KEY = 'terrys-budget-tracker-v5';
+const STORAGE_KEY = 'terrys-budget-tracker-v6';
 let saveTimer = null;
 function saveState(){
   clearTimeout(saveTimer);
@@ -1002,6 +1002,7 @@ function renderAll(){
         const sure = confirm('This clears everything saved in this browser (all months, ticks, custom entries, cloud sync settings) and reloads the built-in defaults. This cannot be undone. Continue?');
         if(!sure) return;
         try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
+        try{ localStorage.removeItem('terrys-budget-tracker-v5'); }catch(e){}
         try{ localStorage.removeItem('terrys-budget-tracker-v4'); }catch(e){}
         try{ localStorage.removeItem('terrys-budget-tracker-v3'); }catch(e){}
         try{ localStorage.removeItem('terrys-budget-tracker-v2'); }catch(e){}
